@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NUKOISM Receipt Generator</title>
+        <!-- Bootstrap 5 CDN -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+            }
+    
+            .container {
+                max-width: 800px;
+                margin: auto;
+                background: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+    
+            h1 {
+                text-align: center;
+                margin-bottom: 20px;
+                font-weight: bold;
+            }
+    
+            input, button {
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+    
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+    
+            table th, table td {
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: center;
+            }
+
+            table th {
+                background-color: #a52a2a;
+                color: white;
+                font-weight: bold;
+            }
+            table thead {
+                background-color: #a52a2a;
+ 
+            }
+    
+            #addRowButton, #generateReceiptButton {
+                border: none;
+                width: auto;
+                margin: 5px;
+            }
+    
+            #totalSection {
+                text-align: right;
+                margin: 20px 0;
+            }
+
+            .receipt-header {
+                text-align: center;
+                color: #a52a2a;
+                font-size: 2.5em;
+                font-weight: bold;
+                margin: 20px 0;
+                letter-spacing: 2px;
+            }
+
+            .company-info {
+                text-align: left;
+                margin-bottom: 20px;
+            }
+
+            .logo-section {
+                text-align: right;
+                margin-bottom: 20px;
+            }
+
+            .logo-placeholder {
+                border: 2px dashed #ccc;
+                padding: 20px;
+                border-radius: 5px;
+                color: #999;
+                cursor: pointer;
+            }
+
+            .receipt-details {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .notes-section {
+                margin-top: 30px;
+                text-align: left;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 style="margin-bottom:3em;">NUKOS Receipt Generator</h1>
+            
+            <!-- Company Info Section -->
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <div class="company-info">
+                        <h2><strong>NUKOISM</strong></h2>
+                        <div class="mb-2">
+                            <input type="text" id="companyAddress1" class="form-control" placeholder="Company Address Line 1" value="No 1 Erefoluwa close off aganbi street, ugbeyiyi sapele delta state">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="receipt-header">RECEIPT</div>
+            
+            <form id="receiptForm">
+                <div class="receipt-details">
+                    <div>
+                        <label for="billedTo"><strong>Billed To</strong></label>
+                        <input type="text" id="billedTo" class="form-control" placeholder="Customer Name" required>
+                        <div class="mt-2">
+                            <input type="text" id="customerAddress1" class="form-control" placeholder="Customer Address Line 1">
+                        </div>
+                        <div class="mt-2">
+                            <input type="text" id="customerAddress2" class="form-control" placeholder="Customer Address Line 2">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="mb-3">
+                            <label for="receiptNo"><strong>Receipt #</strong></label>
+                            <input type="text" id="receiptNo" class="form-control" required>
+                        </div>
+                        <div>
+                            <label for="receiptDate"><strong>Receipt Date</strong></label>
+                            <input type="date" id="receiptDate" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+    
+            <div class="table-responsive">
+                <table id="receiptTable" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product Description</th>
+                            <th>QTY</th>
+                            <th>Price(₦)</th>
+                            <th>Total (₦)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="addRowButton" class="btn btn-success">+ Add Item</button>
+            
+            <div id="totalSection" class="mt-4">
+                <div class="row">
+                    <div class="col-8"></div>
+                    <div class="col-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>₦<span id="subtotal">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (0%):</span>
+                            <span>₦<span id="taxAmount">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3" style="border-top: 1px solid #ddd; padding-top: 10px;">
+                            <strong>Total:</strong>
+                            <strong>₦<span id="totalAmount">0.00</span></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="paymentMethod"><strong>Payment Method</strong></label>
+                <select id="paymentMethod" class="form-control" required>
+                    <option value="">Select Payment Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="Transfer">Transfer</option>
+                </select>
+            </div>
+
+            <div class="notes-section">
+                <label for="notes"><strong>Notes</strong></label>
+                <textarea id="notes" class="form-control" rows="3" placeholder="Thank you for your business!"></textarea>
+            </div>
+
+            <div class="mt-4">
+                <label for="signatureUpload"><strong>Signature</strong></label>
+                <div class="border p-3 text-center" style="min-height: 80px; background-color: #f8f9fa;" onclick="document.getElementById('signatureInput').click()">
+                    <div id="signaturePreview">
+                        <i class="fa fa-upload"></i> Click to upload signature
+                    </div>
+                </div>
+                <input type="file" id="signatureInput" accept="image/*" style="display: none;">
+            </div>
+
+            <button id="generateReceiptButton" class="btn btn-primary mt-3 w-100" disabled>Generate Receipt</button>
+        </div>
+        
+        <!-- Bootstrap Bundle JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+        <script>
+         document.addEventListener("DOMContentLoaded", () => {
+    const tableBody = document.getElementById("tableBody");
+    const addRowButton = document.getElementById("addRowButton");
+    const subtotalEl = document.getElementById("subtotal");
+    const taxAmountEl = document.getElementById("taxAmount");
+    const totalAmountEl = document.getElementById("totalAmount");
+    const generateReceiptButton = document.getElementById("generateReceiptButton");
+    const formInputs = document.querySelectorAll("#receiptForm input");
+    const signatureInput = document.getElementById("signatureInput");
+    
+    let signatureBase64 = "";
+    const taxRate = 0; // 0% tax, change if needed
+
+    // Handle signature upload
+    signatureInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                signatureBase64 = e.target.result;
+                document.getElementById('signaturePreview').innerHTML = '<img src="' + signatureBase64 + '" style="max-width: 150px; max-height: 60px;">';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Validate form and table
+    function validateFormAndTable() {
+        const isFormValid = Array.from(formInputs).every(input => input.value.trim() !== "") && document.getElementById("paymentMethod").value !== "";
+        const hasValidRow = Array.from(tableBody.querySelectorAll("tr")).some(row => {
+            const description = row.querySelector(".description")?.value.trim();
+            const qty = parseFloat(row.querySelector(".qty")?.value || "0");
+            const price = parseFloat(row.querySelector(".price")?.value.replace(/,/g, "") || "0");
+            return description && qty > 0 && price > 0;
+        });
+        generateReceiptButton.disabled = !(isFormValid && hasValidRow);
+    }
+
+    function formatPriceInput(input) {
+        const value = input.value.replace(/,/g, "");
+        if (!isNaN(value) && value) {
+            input.value = parseFloat(value).toLocaleString("en-NG");
+        }
+    }
+
+    function calculateTotal() {
+        let grandTotal = 0;
+        tableBody.querySelectorAll("tr").forEach(row => {
+            const qty = parseFloat(row.querySelector(".qty").value) || 0;
+            const price = parseFloat(row.querySelector(".price").value.replace(/,/g, "")) || 0;
+            const total = qty * price;
+
+            row.querySelector(".total").textContent = total.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+            grandTotal += total;
+        });
+        
+        const taxAmount = grandTotal * taxRate;
+        const finalTotal = grandTotal + taxAmount;
+        
+        subtotalEl.textContent = grandTotal.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+        taxAmountEl.textContent = taxAmount.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+        totalAmountEl.textContent = finalTotal.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+
+        validateFormAndTable();
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    }
+
+    function addRow() {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><input type="text" class="description form-control" placeholder="Product Description"></td>
+            <td><input type="number" class="qty form-control" placeholder="1" min="1"></td>
+            <td><input type="text" class="price form-control" placeholder="0.00"></td>
+            <td class="total">0.00</td>
+            <td>
+                <button class="deleteButton btn btn-danger btn-sm"><i class="fa fa-trash-o"></i></button>
+            </td>
+        `;
+
+        const priceInput = row.querySelector(".price");
+        priceInput.addEventListener("input", () => {
+            formatPriceInput(priceInput);
+            calculateTotal();
+        });
+
+        row.querySelector(".qty").addEventListener("input", calculateTotal);
+        row.querySelector(".deleteButton").addEventListener("click", () => {
+            row.remove();
+            calculateTotal();
+        });
+
+        row.querySelectorAll("input").forEach(input => input.addEventListener("input", validateFormAndTable));
+        tableBody.appendChild(row);
+        validateFormAndTable();
+    }
+
+    function generatePDF() {
+        const receiptDate = document.getElementById("receiptDate").value;
+        const receiptNo = document.getElementById("receiptNo").value;
+        const billedTo = document.getElementById("billedTo").value;
+        const customerAddress1 = document.getElementById("customerAddress1").value;
+        const customerAddress2 = document.getElementById("customerAddress2").value;
+        const companyAddress1 = document.getElementById("companyAddress1").value;
+        const notes = document.getElementById("notes").value;
+        const paymentMethod = document.getElementById("paymentMethod").value;
+
+        const formattedDate = formatDate(receiptDate);
+
+        let rows = [];
+        tableBody.querySelectorAll("tr").forEach(row => {
+            const description = row.querySelector(".description").value;
+            const qty = row.querySelector(".qty").value;
+            const price = row.querySelector(".price").value.replace(/,/g, "");
+            const total = row.querySelector(".total").textContent;
+
+            rows.push([description, qty, `N${parseFloat(price).toLocaleString("en-NG")}`, `N${total}`]);
+        });
+
+        const subtotal = subtotalEl.textContent;
+        const taxAmount = taxAmountEl.textContent;
+        const total = totalAmountEl.textContent;
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        // Company header
+        pdf.setFontSize(18);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("NUKOISM", 15, 20);
+        
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("No 1 Erefoluwa close off aganbi street,", 15, 28);
+        pdf.text("ugbeyiyi sapele delta state", 15, 34);
+
+        // Receipt title - right aligned
+        pdf.setFontSize(24);
+        pdf.setFont("helvetica", "bold");
+        pdf.setTextColor(165, 42, 42);
+        pdf.text("RECEIPT", 195, 50, { align: 'right' });
+        pdf.setTextColor(0, 0, 0);
+
+        // Customer and receipt details
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Billed To", 15, 65);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(billedTo, 15, 73);
+        if (customerAddress1) pdf.text(customerAddress1, 15, 79);
+        if (customerAddress2) pdf.text(customerAddress2, 15, 85);
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Receipt #", 140, 65);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(receiptNo, 195, 65, { align: 'right' });
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Receipt Date", 140, 73);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(formattedDate, 195, 73, { align: 'right' });
+
+        // Table
+        pdf.autoTable({
+            startY: 95,
+            head: [["Product Description", "QTY", "Price (N)", "Total (N)"]],
+            body: rows,
+            headStyles: { 
+                fillColor: [165, 42, 42],
+                textColor: [255, 255, 255]
+            },
+            styles: {
+                lineColor: [0, 0, 0],
+                lineWidth: 0.1
+            },
+            headStyles: {
+                fillColor: [165, 42, 42],
+                textColor: [255, 255, 255],
+                lineColor: [0, 0, 0],
+                lineWidth: 0.1
+            }
+        });
+
+        // Totals section - aligned to table edge
+        const finalY = pdf.lastAutoTable.finalY + 15;
+        const rightAlign = 195; // Align to table edge
+        const labelAlign = 140;
+        
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Subtotal:", labelAlign, finalY);
+        pdf.text(`N${subtotal}`, rightAlign, finalY, { align: 'right' });
+        
+        pdf.text("Tax (0%):", labelAlign, finalY + 8);
+        pdf.text(`N${taxAmount}`, rightAlign, finalY + 8, { align: 'right' });
+        
+        // Draw a line above total
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.5);
+        pdf.line(labelAlign, finalY + 12, rightAlign, finalY + 12);
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Total:", labelAlign, finalY + 18);
+        pdf.text(`N${total}`, rightAlign, finalY + 18, { align: 'right' });
+
+        // Payment Method
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Payment Method:", 15, finalY + 35);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(paymentMethod, 15, finalY + 43);
+
+        // Notes
+        if (notes) {
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Notes", 15, finalY + 55);
+            pdf.setFont("helvetica", "normal");
+            const splitNotes = pdf.splitTextToSize(notes, 180);
+            pdf.text(splitNotes, 15, finalY + 63);
+        }
+
+        // Signature
+        if (signatureBase64) {
+            const signatureY = notes ? finalY + 90 : finalY + 60;
+            pdf.setFont("helvetica", "bold");
+            pdf.text('Signature:', 15, signatureY);
+            pdf.addImage(signatureBase64, 'JPEG', 15, signatureY + 5, 40, 20);
+        }
+
+        // Save PDF
+        const pdfFileName = billedTo ? `${billedTo}_Receipt.pdf` : 'Receipt.pdf';
+        pdf.save(pdfFileName);
+    }
+
+    // Event listeners
+    formInputs.forEach(input => input.addEventListener("input", validateFormAndTable));
+    document.getElementById("paymentMethod").addEventListener("change", validateFormAndTable);
+    addRowButton.addEventListener("click", addRow);
+    generateReceiptButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        generatePDF();
+    });
+
+    // Set today's date
+    document.getElementById("receiptDate").valueAsDate = new Date();
+    
+    addRow(); // Add first row by default
+    validateFormAndTable();
+});
+        </script>
+</body>
+</html>
